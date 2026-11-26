@@ -1,0 +1,36 @@
+# Declarative Automation Bundle: daily synthetic song telemetry + dimensional model
+bundle:
+  name: demo_genie_zero_ops
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog for the dimensional model
+    default: cricket_australia_sponsor
+  schema:
+    description: Schema the dimensional model publishes to
+    default: song_telemetry
+
+targets:
+  # Personal dev copy: resources are prefixed, schedules paused, tables go to a separate schema
+  dev:
+    mode: development
+    variables:
+      schema: song_telemetry_dev
+    resources:
+      schemas:
+        song_telemetry_dev:
+          catalog_name: ${var.catalog}
+          name: song_telemetry_dev
+          comment: Dev copy of the song telemetry dimensional model
+
+  # Live target: bound to the existing pipeline/tables in cricket_australia_sponsor.song_telemetry
+  prod:
+    default: true
+    mode: production
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: ${workspace.current_user.userName}

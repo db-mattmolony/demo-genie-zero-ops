@@ -1,0 +1,14 @@
+resources:
+  pipelines:
+    song_telemetry_dimensional_model:
+      name: song_telemetry_dimensional_model
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      root_path: ../src/song_telemetry_dimensional_model
+      libraries:
+        - glob:
+            include: ../src/song_telemetry_dimensional_model/transformations/**
+      serverless: true
+      photon: true
+      channel: CURRENT
+      continuous: false
