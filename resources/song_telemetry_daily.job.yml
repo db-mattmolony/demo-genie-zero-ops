@@ -15,15 +15,35 @@ resources:
           default: ''
         - name: n_events
           default: '10000'
+        - name: full_refresh  # 'true' = full refresh of all pipeline tables; anything else = incremental
+          default: 'true'
 
       tasks:
         - task_key: generate_synthetic_events
           notebook_task:
             notebook_path: ../src/event_generation/event-creation.ipynb
 
-        - task_key: refresh_dimensional_model
+        # Route on the full_refresh job parameter (pipeline_task.full_refresh only accepts a literal boolean)
+        - task_key: check_full_refresh
           depends_on:
             - task_key: generate_synthetic_events
+          condition_task:
+            op: EQUAL_TO
+            left: '{{job.parameters.full_refresh}}'
+            right: 'true'
+
+        - task_key: refresh_dimensional_model
+          depends_on:
+            - task_key: check_full_refresh
+              outcome: 'false'
           pipeline_task:
             pipeline_id: ${resources.pipelines.song_telemetry_dimensional_model.id}
             full_refresh: false
+
+        - task_key: full_refresh_dimensional_model
+          depends_on:
+            - task_key: check_full_refresh
+              outcome: 'true'
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.song_telemetry_dimensional_model.id}
+            full_refresh: true
