@@ -6,9 +6,9 @@ from pyspark.sql import functions as F
     name="play_events_clean",
     comment="Typed and validated play events, before de-duplication.",
 )
+@dp.expect_or_fail("event_ts_not_null", "event_ts_utc IS NOT NULL")
 @dp.expect_all_or_drop({
     "event_id_not_null": "event_id IS NOT NULL",
-    "event_ts_not_null": "event_ts_utc IS NOT NULL",
     "store_id_not_null": "store_id IS NOT NULL",
     "device_id_not_null": "device_id IS NOT NULL",
     "content_id_not_null": "content_id IS NOT NULL",
